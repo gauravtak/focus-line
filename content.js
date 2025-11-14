@@ -1,56 +1,57 @@
 // content.js
 (() => {
-  const STORAGE_KEY_PREFIX = 'scroll_marker_page_';
+  const STORAGE_KEY_PREFIX = "scroll_marker_page_";
 
   // Create elements
-  let marker = document.createElement('div');
-  let handle = document.createElement('div');
-  marker.id = 'scroll-marker-line';
-  handle.id = 'scroll-marker-handle';
+  let marker = document.createElement("div");
+  let handle = document.createElement("div");
+  marker.id = "scroll-marker-line";
+  handle.id = "scroll-marker-handle";
 
   // Default settings
   let settings = {
-    enabled: true,
-    mode: 'auto', // 'auto' or 'manual'
-    color: '#ff0000',
+    enabled: false,
+    mode: "auto", // 'auto' or 'manual'
+    color: "#ff0000",
     thickness: 3, // px
-    opacity: 0.9
+    opacity: 0.9,
   };
 
   // Keep max scroll Y for auto mode
   let maxY = 0;
 
   // Helpers
-  const getPageKey = () => STORAGE_KEY_PREFIX + location.origin + location.pathname;
+  const getPageKey = () =>
+    STORAGE_KEY_PREFIX + location.origin + location.pathname;
 
   function applyStyles() {
     // marker: a full-width horizontal bar at absolute position in document
     Object.assign(marker.style, {
-      position: 'absolute',
-      left: '0',
-      width: '100%',
+      position: "absolute",
+      left: "0",
+      width: "100%",
       height: `${settings.thickness}px`,
       background: settings.color,
       opacity: settings.opacity,
       zIndex: 2147483647,
-      pointerEvents: 'none', // allow clicking through marker
-      transition: 'top 0.05s linear'
+      pointerEvents: "none", // allow clicking through marker
+      transition: "top 0.05s linear",
     });
 
     // handle: small draggable square at left edge of marker to adjust manually
     Object.assign(handle.style, {
-      position: 'absolute',
-      left: '8px',
-      width: '18px',
-      height: '18px',
+      position: "absolute",
+      left: "8px",
+      width: "18px",
+      height: "18px",
       background: settings.color,
-      borderRadius: '3px',
-      transform: 'translateY(-7px)',
+      borderRadius: "3px",
+      transform: "translateY(-7px)",
       zIndex: 2147483648,
-      cursor: 'ns-resize',
-      display: settings.mode === 'manual' ? 'block' : 'none',
-      opacity: '1',
-      boxShadow: '0 0 2px rgba(0,0,0,0.4)'
+      cursor: "ns-resize",
+      display: settings.mode === "manual" ? "block" : "none",
+      opacity: "1",
+      boxShadow: "0 0 2px rgba(0,0,0,0.4)",
     });
   }
 
@@ -62,9 +63,12 @@
     if (!document.documentElement.contains(handle)) {
       document.documentElement.appendChild(handle);
     }
-    const top = Math.max(0, Math.min(y, document.documentElement.scrollHeight - settings.thickness));
-    marker.style.top = top + 'px';
-    handle.style.top = top + 'px';
+    const top = Math.max(
+      0,
+      Math.min(y, document.documentElement.scrollHeight - settings.thickness)
+    );
+    marker.style.top = top + "px";
+    handle.style.top = top + "px";
   }
 
   function savePageState() {
@@ -94,7 +98,7 @@
   // Scroll listener for auto mode: update maxY and marker position
   function onScroll() {
     if (!settings.enabled) return;
-    if (settings.mode !== 'auto') return;
+    if (settings.mode !== "auto") return;
     const bottomSeen = window.scrollY + window.innerHeight;
     if (bottomSeen > maxY) {
       maxY = bottomSeen;
@@ -108,7 +112,7 @@
   let dragging = false;
   let startY = 0;
   function onPointerDown(e) {
-    if (settings.mode !== 'manual' || !settings.enabled) return;
+    if (settings.mode !== "manual" || !settings.enabled) return;
     dragging = true;
     startY = e.clientY;
     handle.setPointerCapture(e.pointerId);
@@ -122,7 +126,9 @@
   function onPointerUp(e) {
     if (!dragging) return;
     dragging = false;
-    try { handle.releasePointerCapture(e.pointerId); } catch (err) {}
+    try {
+      handle.releasePointerCapture(e.pointerId);
+    } catch (err) {}
     // Save manual marker position and treat markerTop as maxY for consistency
     const top = parseInt(marker.style.top || 0, 10) || 0;
     maxY = top + settings.thickness / 2;
@@ -130,44 +136,48 @@
   }
 
   // Message listener for popup commands
-  chrome.storage.sync.get(['scroll_marker_settings'], (res) => {
+  chrome.storage.sync.get(["scroll_marker_settings"], (res) => {
     const saved = res.scroll_marker_settings;
     if (saved) settings = Object.assign(settings, saved);
     applyStyles();
     restorePageState(() => {
       if (settings.enabled) {
         // Make sure marker visible if enabled
-        marker.style.display = 'block';
-        handle.style.display = settings.mode === 'manual' ? 'block' : 'none';
+        marker.style.display = "block";
+        handle.style.display = settings.mode === "manual" ? "block" : "none";
       } else {
-        marker.style.display = 'none';
-        handle.style.display = 'none';
+        marker.style.display = "none";
+        handle.style.display = "none";
       }
     });
   });
 
-  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true });
 
   // attach elements and listeners
   document.documentElement.appendChild(marker);
   document.documentElement.appendChild(handle);
 
-  handle.addEventListener('pointerdown', onPointerDown);
-  window.addEventListener('pointermove', onPointerMove);
-  window.addEventListener('pointerup', onPointerUp);
+  handle.addEventListener("pointerdown", onPointerDown);
+  window.addEventListener("pointermove", onPointerMove);
+  window.addEventListener("pointerup", onPointerUp);
 
   // Also listen for storage changes (popup updates settings)
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'sync' && changes.scroll_marker_settings) {
-      settings = Object.assign(settings, changes.scroll_marker_settings.newValue);
+    if (area === "sync" && changes.scroll_marker_settings) {
+      settings = Object.assign(
+        settings,
+        changes.scroll_marker_settings.newValue
+      );
       applyStyles();
-      handle.style.display = settings.mode === 'manual' && settings.enabled ? 'block' : 'none';
-      marker.style.display = settings.enabled ? 'block' : 'none';
+      handle.style.display =
+        settings.mode === "manual" && settings.enabled ? "block" : "none";
+      marker.style.display = settings.enabled ? "block" : "none";
     }
   });
 
   // Save page state when unloading (so position persists)
-  window.addEventListener('beforeunload', () => {
+  window.addEventListener("beforeunload", () => {
     savePageState();
   });
 
@@ -179,4 +189,3 @@
   });
   resizeObserver.observe(document.documentElement);
 })();
-
