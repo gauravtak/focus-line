@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Scroll Marker",
+  "description": "Shows an adjustable horizontal line (marker) on web pages to show how far you've scrolled.",
+  "version": "1.0",
+  "permissions": ["storage", "activeTab", "scripting", "tabs"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Scroll Marker"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
+

@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Scroll Marker</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <h3>Scroll Marker</h3>
+    <label><input type="checkbox" id="enabled"> Enabled</label>
+
+    <div class="row">
+      <label>Mode</label>
+      <select id="mode">
+        <option value="auto">Auto (mark furthest)</option>
+        <option value="manual">Manual (drag to set)</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>Color</label>
+      <input type="color" id="color" />
+    </div>
+
+    <div class="row">
+      <label>Thickness (px)</label>
+      <input type="number" id="thickness" min="1" max="20" />
+    </div>
+
+    <div class="row">
+      <button id="reset">Reset page marker</button>
+    </div>
+
+    <div class="row small">Tip: In Auto mode the marker moves to the furthest point you've scrolled to on this page. In Manual mode drag the small handle to set the marker.</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+
